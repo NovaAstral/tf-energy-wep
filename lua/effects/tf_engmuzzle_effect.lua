@@ -1,3 +1,4 @@
+if CLIENT then
 local function MaterialFromVMT(name, VMT)
     if (type(VMT) ~= "string" or type(name) ~= "string") then return Material(" ") end -- Return a dummy Material
     local t = util.KeyValuesToTable("\"material\"{" .. VMT .. "}")
@@ -18,7 +19,7 @@ EFFECT.Glow = MaterialFromVMT(
 	}]]
 );
 EFFECT.Size = 64;
-EFFECT.Color = Color(255,200,120);
+EFFECT.Color = Color(65,250,230);
 
 function EFFECT:Init(data)
 	self.Parent = data:GetEntity()
@@ -31,7 +32,7 @@ function EFFECT:Init(data)
 	self.Entity:SetRenderBounds(Vector(1,1,1)*self.Size*(-2),Vector(1,1,1)*self.Size*2)
 	local color = data:GetAngles()
 	if(color ~= Angle(0,0,0)) then
-		self.Color = Color(120,180,255,215)
+		self.Color = Color(65,250,230,215)
 	end
 
 	local e = self.Parent
@@ -77,4 +78,5 @@ end
 function EFFECT:Think()
 	self.Size = math.Clamp(self.Size-150*FrameTime(),0,1337);
 	return (self.Size > 0 and self.Draw);
+end
 end

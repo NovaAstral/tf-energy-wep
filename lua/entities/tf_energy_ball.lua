@@ -61,6 +61,7 @@ if SERVER then
     end
 
     function ENT:Explode()
+        --self:EmitSound("")
         self:Blast("AR2Impact",self:GetPos(),self,Vector(1,1,1),self.Damage,self.Radius)
         self:Destroy()
     end
@@ -120,7 +121,6 @@ if SERVER then
         util.ScreenShake(pos, 2, 2.5, 1, 700)
     end
 
-    --################### Setup @Mad
     function ENT:PrepareBullet(dir,rand,spd,size)
         self.Direction = dir
         self.Random = rand
@@ -138,7 +138,7 @@ end
 
 if CLIENT then
 	local function MaterialFromVMT(name, VMT)
-		if (type(VMT) ~= "string" or type(name) ~= "string") then return Material(" ") end -- Return a dummy Material
+		if (type(VMT) ~= "string" or type(name) ~= "string") then return Material(" ") end
 		local t = util.KeyValuesToTable("\"material\"{" .. VMT .. "}")
 	
 		for shader, params in pairs(t) do
@@ -158,21 +158,18 @@ if CLIENT then
     ENT.LightSettings = "cl_staff_dynlights_flight"
     ENT.RenderGroup = RENDERGROUP_BOTH
 
-    --################### Init @aVoN
     function ENT:Initialize()
         self.Created = CurTime()
         self.DrawShaft = true
 
-        self.Sound = Sound("tf_enegy_pew.wav")
+        self.Sound = Sound("tf_energy_fire.wav")
 
         local size = self.Entity:GetNetworkedInt("Size", 0)
 
-        -- X,Y and shaft-leght!
         self.Sizes = {20 + size * 3, 20 + size * 3, 180 + size * 10}
     end
 
     function ENT:Draw()
-        -- Needed for several workarounds
         if (not self.StartPos) then
             self.StartPos = self.Entity:GetPos()
         end
@@ -184,7 +181,6 @@ if CLIENT then
             local velo = self.Entity:GetVelocity()
             local dir = -1 * velo:GetNormalized()
 
-            -- Mainly a workaround for servers: The shots appeared to have their trails really late. Seems like the velocity simply was 0
             if (velo:Length() < 400) then
                 if (self.StartPos) then
                     dir = (self.StartPos - self.Entity:GetPos()):GetNormalized()
@@ -206,10 +202,8 @@ if CLIENT then
     function ENT:Think()
         local size = self.Entity:GetNWInt("Size", 0)
 
-        -- X,Y and shaft-leght!
         self.Sizes = {20 + size * 3, 20 + size * 3, 180 + size * 10}
 
-        -- ######################## Flyby-light
         local color = self.Entity:GetColor()
         local r, g, b = color.r, color.g, color.b
         local dlight = DynamicLight(self:EntIndex())
@@ -227,7 +221,6 @@ if CLIENT then
 
         local time = CurTime()
 
-        -- ######################## Flyby-noise and screenshake!
         if ((time - self.Created >= 0.1 or self.InstantEffect) and time - (self.Last or 0) > 0.3) then
             local p = LocalPlayer()
             local pos = self.Entity:GetPos()
