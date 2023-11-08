@@ -13,8 +13,8 @@ if SERVER then
         self.Entity:SetSolid(SOLID_VPHYSICS)
         self:DrawShadow(false)
 
-        self.Radius = 20 + 30 * self.Size
-        self.Damage = 30 + 40 * self.Size
+        self.Radius = 50 * self.Size
+        self.Damage = 70 * self.Size
         local color = self.Entity:GetColor()
         local r,g,b = color.r, color.g, color.b
 
@@ -63,6 +63,26 @@ if SERVER then
     function ENT:Explode()
         --self:EmitSound("")
         self:Blast("AR2Impact",self:GetPos(),self,Vector(1,1,1),self.Damage,self.Radius)
+        if(self.BulletType == "toxic") then
+            local ents = ents.FindInSphere(self:GetPos(),self.Radius)
+            local shotowner = self:GetOwner()
+            for k,ent in ipairs(ents) do
+                if(ent:IsPlayer()) then
+                    local dist = self:GetPos():Distance(ent:GetPos())
+                    local toxtime = math.Remap(dist,1,self.Radius,10,1)
+
+                    timer.Create("tf_wep_toxin_corrosion_effect"..ent:EntIndex(),1,toxtime,function()
+                        if(not ent:Alive()) then
+                            timer.Remove("tf_wep_toxin_corrosion_effect"..ent:EntIndex())
+                        end
+
+                        ent:TakeDamage(10,shotowner,shotowner)
+                    end)
+                end
+            end
+
+        end
+
         self:Destroy()
     end
 
@@ -100,8 +120,7 @@ if SERVER then
                 end
             end
             
-            self:Blast("AR2Impact",pos,ent,hitnormal,self.Damage,self.Radius)
-            self:Destroy()
+            self:Explode()
         end
     end
 
@@ -121,12 +140,13 @@ if SERVER then
         util.ScreenShake(pos, 2, 2.5, 1, 700)
     end
 
-    function ENT:PrepareBullet(dir,rand,spd,size)
+    function ENT:PrepareBullet(dir,rand,spd,size,btype)
         self.Direction = dir
         self.Random = rand
         self.Speed = spd
         self.Size = size
         self.Entity:SetNWInt("Size",size)
+        self.BulletType = btype
     end
 
     function ENT:Destroy()
@@ -162,7 +182,7 @@ if CLIENT then
         self.Created = CurTime()
         self.DrawShaft = true
 
-        self.Sound = Sound("tf_energy_fire.wav")
+        --self.Sound = Sound("tf_energy_fire.wav") -- pass sound
 
         local size = self.Entity:GetNetworkedInt("Size", 0)
 
@@ -220,7 +240,7 @@ if CLIENT then
         end
 
         local time = CurTime()
-
+        /* --pass sound
         if ((time - self.Created >= 0.1 or self.InstantEffect) and time - (self.Last or 0) > 0.3) then
             local p = LocalPlayer()
             local pos = self.Entity:GetPos()
@@ -235,7 +255,7 @@ if CLIENT then
                 self.Last = time
             end
         end
-
+        */
         self.Entity:NextThink(time)
 
         return true

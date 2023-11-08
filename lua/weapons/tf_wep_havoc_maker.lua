@@ -1,9 +1,9 @@
 local SWEP = {Primary = {}, Secondary = {}}
 
 SWEP.Author = "Nova Astral"
-SWEP.PrintName = "Energy Gun"
+SWEP.PrintName = "Havoc Maker"
 SWEP.Purpose = "shoot the gun"
-SWEP.Instructions = "LMB - Fire Energy Ball \nRMB - Fire Big Energy Ball"
+SWEP.Instructions = "LMB - Fire Energy Shot"
 SWEP.DrawCrosshair = true
 SWEP.SlotPos = 10
 SWEP.Slot = 3
@@ -17,10 +17,14 @@ SWEP.Primary.ClipSize = -1
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.Automatic = true
 SWEP.DrawAmmo = true
-SWEP.WorldModel = "models/weapons/w_toolgun.mdl"
-SWEP.ViewModel = "models/weapons/v_toolgun.mdl"
+SWEP.WorldModel = "models/megarexfoc/w_mafoc_x32.mdl"
+SWEP.ViewModel = "models/megarexfoc/viewmodels/c_mafoc_x32.mdl"
 
 SWEP.Category = "Transformers Weapons"
+
+SWEP.Base = "foc_arm_base"
+SWEP.FOCEquip = Sound("cybertronian/tfx18equip.wav")
+SWEP.FOCHolster = Sound("cybertronian/tfx18holster.wav")
 
 function SWEP:CanPrimaryAttack() return false end
 function SWEP:CanSecondaryAttack() return false end
@@ -28,16 +32,13 @@ function SWEP:Holster() return true end
 function SWEP:ShouldDropOnDie() return false end
 
 function SWEP:Initialize()
-    --if SERVER then util.AddNetworkString("EWepSecNet") end
-
     if(self.SetHoldType) then
         self:SetHoldType("pistol")
     end
 
     self:DrawShadow(false)
 
-    --self.ReloadDelay = CurTime()+1
-    self.SecAtk = false
+    self.ShotColor = Color(231,209,0,215)
 end
 
 function SWEP:Effects()
@@ -50,37 +51,32 @@ function SWEP:Effects()
     fx:SetAngles(Angle(255, 50, 50))
     fx:SetRadius(32)
     fx:SetMagnitude(2)
+    fx:SetColor(231,209,0)
     util.Effect("tf_engmuzzle_effect",fx,true)
     
     return true
 end
 
 if(SERVER) then
-    function SWEP:PrimaryAttack() --shoot ball
-        if(self:GetNextPrimaryFire() > CurTime() or self:Ammo1() <= 0) then return end
-
-        self:SetNextPrimaryFire(CurTime()+1)
-        self:SetNextSecondaryFire(CurTime()+1)
-
+    function SWEP:DoShooty()
         local ply = self.Owner
 
         self:Effects()
 
-        local p = self.Owner
-        local multiply = 3 -- Default inaccuracy multiplier
-        local aimvector = p:GetAimVector()
-        local shootpos = p:GetShootPos()
-        local vel = p:GetVelocity()
+        local multiply = 200 -- Default inaccuracy multiplier
+        local aimvector = ply:GetAimVector()
+        local shootpos = ply:GetShootPos()
+        local vel = ply:GetVelocity()
         local filter = {self.Owner, self.Weapon}
     
-        if(p:IsPlayer()) then --inaccuracy
+        if(ply:IsPlayer()) then --inaccuracy
             local right = aimvector:Angle():Right()
             local up = aimvector:Angle():Up()
    
             local max = util.QuickTrace(shootpos, right * 100, filter).Fraction * 100 - 10
             local trans = right:DotProduct(vel) * right / 25
     
-            if (p:Crouching()) then
+            if (ply:Crouching()) then
                 multiply = 0.3
                 shootpos = shootpos + math.Clamp(15, -10, max) * right - 4 * up + trans
             else
@@ -92,36 +88,51 @@ if(SERVER) then
             multiply = 0
         end
     
-        local trace = util.QuickTrace(p:GetShootPos(), 16 * 1024 * aimvector, filter)
+        local trace = util.QuickTrace(ply:GetShootPos(), 16 * 1024 * aimvector, filter)
     
         if (trace.Hit) then
             aimvector = (trace.HitPos - shootpos):GetNormalized()
         end
     
-        local e = ents.Create("tf_energy_ball")
+        local e = ents.Create("tf_energy_shot")
         e:SetPos(shootpos)
         e:PrepareBullet(aimvector,multiply,8000,1)
-        e:SetOwner(p)
+        e:SetOwner(ply)
         e.Owner = p
         e.Damage = 100
         e:Spawn()
         e:Activate()
-        e:SetColor(Color(65,250,230,215)) --120 175 255
-        p:EmitSound(Sound("tfweapons/tf_energy_fire.wav"), 90, math.random(97, 103))
+        e:SetColor(self.ShotColor)
+        ply:EmitSound(Sound("cybertronian/tfx18shoot.wav"), 90, math.random(97, 103))
+    end
+
+    function SWEP:PrimaryAttack() --shoot
+        if(self:GetNextPrimaryFire() > CurTime() or self:Ammo1() <= 0) then return end
+
+        self:SetNextPrimaryFire(CurTime()+0.05)
+        self:SetNextSecondaryFire(CurTime()+1)
+
+        self:DoShooty()
 
         if (self.Owner:IsPlayer()) then
             self:TakePrimaryAmmo(1)
         end
     end
 
-    function SWEP:SecondaryAttack() --shoot laser
-        if(self:GetNextSecondaryFire() > CurTime() or self:Ammo1() <= 5) then return end
+    function SWEP:SecondaryAttack() --SPEED SHOOT :)
+        if(self:GetNextSecondaryFire() > CurTime() or self:Ammo1() <= 0) then return end
+        
+        if(self.Owner:KeyDown(IN_RELOAD)) then
+            self:SetNextPrimaryFire(CurTime()+1)
+            self:SetNextSecondaryFire(CurTime()+0.01)
 
-        self:SetNextPrimaryFire(CurTime()+10)
-        self:SetNextSecondaryFire(CurTime()+10)
+            self:DoShooty()
+
+            if(self.Owner:IsPlayer()) then
+                self:TakePrimaryAmmo(1)
+            end
+        end
     end
-
-    function SWEP:Reload() return end
 end
 
-timer.Simple(0.1, function() weapons.Register(SWEP,"tf_energy_wep", true) end) --Putting this in a timer stops bugs from happening if the weapon is given while the game is paused
+timer.Simple(0.1, function() weapons.Register(SWEP,"tf_wep_havoc_maker", true) end) --Putting this in a timer stops bugs from happening if the weapon is given while the game is paused

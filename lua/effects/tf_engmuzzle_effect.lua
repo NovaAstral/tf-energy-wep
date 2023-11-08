@@ -18,8 +18,8 @@ EFFECT.Glow = MaterialFromVMT(
 		"$vertexcolor" 1
 	}]]
 );
-EFFECT.Size = 64;
-EFFECT.Color = Color(65,250,230);
+EFFECT.Size = 64
+EFFECT.Color = Color(65,250,230)
 
 function EFFECT:Init(data)
 	self.Parent = data:GetEntity()
@@ -32,7 +32,7 @@ function EFFECT:Init(data)
 	self.Entity:SetRenderBounds(Vector(1,1,1)*self.Size*(-2),Vector(1,1,1)*self.Size*2)
 	local color = data:GetAngles()
 	if(color ~= Angle(0,0,0)) then
-		self.Color = Color(65,250,230,215)
+		self.Color = self:GetColor()
 	end
 
 	local e = self.Parent
@@ -49,24 +49,24 @@ function EFFECT:Init(data)
 end
 
 function EFFECT:Render()
-	if(not IsValid(self.Parent)) then return end;
-	local start = self.Parent:GetPos();
+	if(not IsValid(self.Parent)) then return end
+	local start = self.Parent:GetPos()
 	if(self.Parent.GetShootPos) then
-		start =self.Parent:GetShootPos();
+		start =self.Parent:GetShootPos()
 	end
 	local viewmodel
 	if(self.Parent == LocalPlayer()) then
-		viewmodel = self.Parent:GetViewModel();
+		viewmodel = self.Parent:GetViewModel()
 	else
 		if(self.Parent.GetActiveWeapon) then
-			viewmodel = self.Parent:GetActiveWeapon();
+			viewmodel = self.Parent:GetActiveWeapon()
 		end
 	end
-	if(not IsValid(viewmodel)) then return end;
-	local attach = viewmodel:GetAttachment(1);
-	if(not attach) then return end;
-	start = attach.Pos;
-	render.SetMaterial(self.Glow);
+	if(not IsValid(viewmodel)) then return end
+	local attach = viewmodel:GetAttachment(1)
+	if(not attach) then return end
+	start = attach.Pos
+	render.SetMaterial(self.Glow)
 	render.DrawSprite(
 		start,
 		self.Size,
@@ -76,7 +76,7 @@ function EFFECT:Render()
 end
 
 function EFFECT:Think()
-	self.Size = math.Clamp(self.Size-150*FrameTime(),0,1337);
+	self.Size = math.Clamp(self.Size-150*FrameTime(),0,1337)
 	return (self.Size > 0 and self.Draw);
 end
 end
