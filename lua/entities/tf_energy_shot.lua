@@ -31,7 +31,7 @@ if SERVER then
 
         self:SetNotSolid(true)
 
-        timer.Simple(0.2,function()
+        timer.Simple(0.05,function()
             self:SetNotSolid(false)
         end)
 
