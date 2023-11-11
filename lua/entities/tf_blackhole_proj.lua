@@ -29,12 +29,6 @@ if SERVER then
             self.Phys:SetVelocity(vel) -- end
         end
 
-        self:SetNotSolid(true)
-
-        timer.Simple(0.2,function()
-            self:SetNotSolid(false)
-        end)
-
         self.Entity:SetLocalVelocity(vel)
         self.Created = CurTime()
     end
@@ -51,13 +45,6 @@ if SERVER then
         end
     end
 
-	/*
-    function ENT:CAPOnShieldTouch(shield) --Make it hit Carter's Addon Pack shields
-        self:Blast("AR2Impact",self:GetPos(),shield,Vector(1,1,1),false,self.Damage,self.Radius)
-        self:Destroy()
-    end
-	*/
-
     function ENT:Think(ply)
         local phys = self:GetPhysicsObject()
 
@@ -69,25 +56,6 @@ if SERVER then
     function ENT:Explode()
         --self:EmitSound("")
         self:Blast("AR2Impact",self:GetPos(),self,Vector(1,1,1),self.Damage,self.Radius)
-        if(self.BulletType == "toxic") then
-            local ents = ents.FindInSphere(self:GetPos(),self.Radius)
-            local shotowner = self:GetOwner()
-            for k,ent in ipairs(ents) do
-                if(ent:IsPlayer()) then
-                    local dist = self:GetPos():Distance(ent:GetPos())
-                    local toxtime = math.Remap(dist,1,self.Radius,10,1)
-
-                    timer.Create("tf_wep_toxin_corrosion_effect"..ent:EntIndex(),1,toxtime,function()
-                        if(not ent:Alive()) then
-                            timer.Remove("tf_wep_toxin_corrosion_effect"..ent:EntIndex())
-                        end
-
-                        ent:TakeDamage(10,shotowner,shotowner)
-                    end)
-                end
-            end
-
-        end
 
         self:Destroy()
     end
@@ -163,68 +131,6 @@ if SERVER then
 end
 
 if CLIENT then
-	local function MaterialFromVMT(name, VMT)
-		if (type(VMT) ~= "string" or type(name) ~= "string") then return Material(" ") end
-		local t = util.KeyValuesToTable("\"material\"{" .. VMT .. "}")
-	
-		for shader, params in pairs(t) do
-			return CreateMaterial(name, shader, params)
-		end
-	end
-
-    ENT.Glow = MaterialFromVMT("EnBallGlow", [["UnLitGeneric"
-	{
-		"$basetexture"		"sprites/light_glow01"
-		"$nocull" 1
-		"$additive" 1
-		"$vertexalpha" 1
-		"$vertexcolor" 1
-	}]])
-    ENT.Shaft = Material("effects/ar2ground2")
-    ENT.LightSettings = "cl_staff_dynlights_flight"
-    ENT.RenderGroup = RENDERGROUP_BOTH
-
-    function ENT:Initialize()
-        self.Created = CurTime()
-        self.DrawShaft = true
-
-        --self.Sound = Sound("tf_energy_fire.wav") -- pass sound
-
-        local size = self.Entity:GetNetworkedInt("Size", 0)
-
-        self.Sizes = {20 + size * 3, 20 + size * 3, 180 + size * 10}
-    end
-
-    function ENT:Draw()
-        if (not self.StartPos) then
-            self.StartPos = self.Entity:GetPos()
-        end
-
-        local start = self.Entity:GetPos()
-        local color = self.Entity:GetColor()
-
-        if (self.DrawShaft) then
-            local velo = self.Entity:GetVelocity()
-            local dir = -1 * velo:GetNormalized()
-
-            if (velo:Length() < 400) then
-                if (self.StartPos) then
-                    dir = (self.StartPos - self.Entity:GetPos()):GetNormalized()
-                end
-            end
-
-            local length = math.Clamp((self.Entity:GetPos() - self.StartPos):Length(), 0, self.Sizes[3])
-            render.SetMaterial(self.Shaft)
-            render.DrawBeam(self.Entity:GetPos(), self.Entity:GetPos() + dir * length, self.Sizes[1], 1, 0, color)
-        end
-
-        render.SetMaterial(self.Glow)
-
-        for i = 1, 2 do
-            render.DrawSprite(start, self.Sizes[2], self.Sizes[2], color)
-        end
-    end
-
     function ENT:Think()
         local size = self.Entity:GetNWInt("Size", 0)
 
@@ -246,22 +152,7 @@ if CLIENT then
         end
 
         local time = CurTime()
-        /* --pass sound
-        if ((time - self.Created >= 0.1 or self.InstantEffect) and time - (self.Last or 0) > 0.3) then
-            local p = LocalPlayer()
-            local pos = self.Entity:GetPos()
-            local norm = self.Entity:GetVelocity():GetNormal()
-            local dist = p:GetPos() - pos
-            local len = dist:Length()
-            local dot_prod = dist:Dot(norm) / len
-            
-            if (math.abs(dot_prod) < 0.5 and dot_prod ~= 0 and len < 500) then
-                local intensity = math.sqrt(1 - dot_prod ^ 2) * len
-                self.Entity:EmitSound(self.Sound, 100 * (1 - intensity / 2500), math.random(80, 120))
-                self.Last = time
-            end
-        end
-        */
+
         self.Entity:NextThink(time)
 
         return true

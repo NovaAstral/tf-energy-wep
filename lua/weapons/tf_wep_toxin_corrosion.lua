@@ -98,7 +98,7 @@ if(SERVER) then
         e:SetPos(shootpos)
         e:PrepareBullet(aimvector,multiply,8000,5,"toxic")
         e:SetOwner(ply)
-        e.Owner = p
+        e.Owner = ply
         e.Damage = 100
         e:Spawn()
         e:Activate()
