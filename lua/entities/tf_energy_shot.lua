@@ -1,10 +1,10 @@
+AddCSLuaFile()
+
 ENT.Type = "anim"
 ENT.Base = "base_anim"
 ENT.DoNotDuplicate = true
 
 if SERVER then
-    AddCSLuaFile()
-
     function ENT:Initialize()
         self.Entity:PhysicsInitSphere(10,"metal")
         self.Entity:SetCollisionBounds(Vector(1,1,1) * -5,Vector(1,1,1) * 5)
@@ -29,18 +29,8 @@ if SERVER then
             self.Phys:SetVelocity(vel) -- end
         end
 
-        self:SetNotSolid(true)
-
-        timer.Simple(0.05,function()
-            self:SetNotSolid(false)
-        end)
-
         self.Entity:SetLocalVelocity(vel)
         self.Created = CurTime()
-    end
-
-    function ENT:UpdateTransmitState()
-        return TRANSMIT_ALWAYS
     end
 
     function ENT:PhysicsUpdate(phys)
@@ -58,20 +48,14 @@ if SERVER then
     end
 	*/
 
-    function ENT:Think(ply)
-        local phys = self:GetPhysicsObject()
-
-        if IsValid(phys) then
-            phys:Wake()
-        end
-    end
-
     function ENT:Explode()
         --self:EmitSound("")
         self:Blast("AR2Impact",self:GetPos(),self,Vector(1,1,1),self.Damage,self.Radius)
+
         if(self.BulletType == "toxic") then
             local ents = ents.FindInSphere(self:GetPos(),self.Radius)
             local shotowner = self:GetOwner()
+
             for k,ent in ipairs(ents) do
                 if(ent:IsPlayer()) then
                     local dist = self:GetPos():Distance(ent:GetPos())
@@ -86,7 +70,6 @@ if SERVER then
                     end)
                 end
             end
-
         end
 
         self:Destroy()

@@ -1,3 +1,5 @@
+AddCSLuaFile()
+
 local SWEP = {Primary = {}, Secondary = {}}
 
 SWEP.Author = "Nova Astral"
