@@ -20,11 +20,10 @@ SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.Automatic = true
 SWEP.DrawAmmo = true
 SWEP.WorldModel = "models/megarexfoc/w_mafoc_scatter.mdl"
-SWEP.ViewModel = "models/megarexfoc/viewmodels/c_mafoc_scatter.mdl"
+SWEP.ViewModel = "models/megarexfoc/viewmodels/c_scatterblaster.mdl"
 
 SWEP.Category = "Transformers Weapons"
 
-SWEP.Base = "foc_arm_base"
 SWEP.FOCEquip = Sound("cybertronian/tfshotgunequip.wav")
 SWEP.FOCHolster = Sound("cybertronian/tfshotgunholster.wav")
 

@@ -3,9 +3,9 @@ AddCSLuaFile()
 local SWEP = {Primary = {}, Secondary = {}}
 
 SWEP.Author = "Nova Astral"
-SWEP.PrintName = "Havoc Maker"
+SWEP.PrintName = "Bottle Launcher"
 SWEP.Purpose = "shoot the gun"
-SWEP.Instructions = "LMB - Fire Energy Shot"
+SWEP.Instructions = "LMB - FIRE ZE MISSILES"
 SWEP.DrawCrosshair = true
 SWEP.SlotPos = 10
 SWEP.Slot = 3
@@ -19,13 +19,13 @@ SWEP.Primary.ClipSize = -1
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.Automatic = true
 SWEP.DrawAmmo = true
-SWEP.WorldModel = "models/megarexfoc/w_nuetron_assault_rifle.mdl"
-SWEP.ViewModel = "models/megarexfoc/viewmodels/c_foc_nuetron_assault_rifle.mdl"
+SWEP.WorldModel = "models/megarexfoc/w_thermolauncher.mdl"
+SWEP.ViewModel = "models/megarexfoc/viewmodels/c_thermolauncher.mdl"
 
 SWEP.Category = "Transformers Weapons"
 
-SWEP.FOCEquip = Sound("cybertronian/tfx18equip.wav")
-SWEP.FOCHolster = Sound("cybertronian/tfx18holster.wav")
+SWEP.FOCEquip = Sound("cybertronian/tflauncherequip.wav")
+SWEP.FOCHolster = Sound("cybertronian/tflauncherholster.wav")
 
 function SWEP:CanPrimaryAttack() return false end
 function SWEP:CanSecondaryAttack() return false end
@@ -38,8 +38,8 @@ function SWEP:Initialize()
     end
 
     self:DrawShadow(false)
-
-    self.ShotColor = Color(231,209,0,215)
+    
+    self.ShotColor = Color(65,250,230,215)
 end
 
 function SWEP:Effects()
@@ -52,14 +52,14 @@ function SWEP:Effects()
     fx:SetAngles(Angle(255, 50, 50))
     fx:SetRadius(32)
     fx:SetMagnitude(2)
-    fx:SetColor(231,209,0)
+    fx:SetColor(65,250,230)
     util.Effect("tf_engmuzzle_effect",fx,true)
     
     return true
 end
 
 if(SERVER) then
-    function SWEP:DoShooty()
+    function SWEP:DoShooty(grav)
         local ply = self.Owner
 
         self:Effects()
@@ -94,26 +94,49 @@ if(SERVER) then
         if (trace.Hit) then
             aimvector = (trace.HitPos - shootpos):GetNormalized()
         end
-    
-        local e = ents.Create("tf_energy_shot")
-        e:SetPos(shootpos)
-        e:PrepareBullet(aimvector,multiply,8000,1)
-        e:SetOwner(ply)
-        e.Owner = ply
-        e.Damage = 100
-        e:Spawn()
-        e:Activate()
-        e:SetColor(self.ShotColor)
-        ply:EmitSound(Sound("cybertronian/tfx18shoot.wav"), 90, math.random(97, 103))
+
+        if(grav == true) then
+            local e = ents.Create("tf_thermo_rocket")
+            e:SetPos(shootpos)
+            e:PrepareBullet(aimvector,multiply,1500,1)
+            e:SetOwner(ply)
+            e.Owner = ply
+            e.Damage = 100
+            e:Spawn()
+            e:Activate()
+            e:SetColor(self.ShotColor)
+            ply:EmitSound(Sound("cybertronian/tflaunchershoot.wav"), 90, math.random(97, 103))
+
+            local Phys = e:GetPhysicsObject()
+
+            if(Phys and Phys:IsValid()) then
+                Phys:EnableGravity(true)
+            end
+
+            e:SetModel("models/props_junk/PopCan01a.mdl")
+        else
+            local e = ents.Create("tf_thermo_rocket")
+            e:SetPos(shootpos)
+            e:PrepareBullet(aimvector,multiply,8000,1)
+            e:SetOwner(ply)
+            e.Owner = ply
+            e.Damage = 100
+            e:Spawn()
+            e:Activate()
+            e:SetColor(self.ShotColor)
+            ply:EmitSound(Sound("cybertronian/tflaunchershoot.wav"), 90, math.random(97, 103))
+
+            e:SetModel("models/props_junk/PopCan01a.mdl")
+        end
     end
 
     function SWEP:PrimaryAttack() --shoot
         if(self:GetNextPrimaryFire() > CurTime() or self:Ammo1() <= 0) then return end
 
-        self:SetNextPrimaryFire(CurTime()+0.05)
+        self:SetNextPrimaryFire(CurTime()+0.8)
         self:SetNextSecondaryFire(CurTime()+1)
 
-        self:DoShooty()
+        self:DoShooty(false)
 
         if (self.Owner:IsPlayer()) then
             self:TakePrimaryAmmo(1)
@@ -122,18 +145,35 @@ if(SERVER) then
 
     function SWEP:SecondaryAttack() --SPEED SHOOT :)
         if(self:GetNextSecondaryFire() > CurTime() or self:Ammo1() <= 0) then return end
-        
-        if(self.Owner:KeyDown(IN_RELOAD)) then
-            self:SetNextPrimaryFire(CurTime()+1)
-            self:SetNextSecondaryFire(CurTime()+0.01)
 
-            self:DoShooty()
-
-            if(self.Owner:IsPlayer()) then
-                self:TakePrimaryAmmo(1)
-            end
+        self:SetNextPrimaryFire(CurTime()+1)
+        self:SetNextSecondaryFire(CurTime()+0.8)
+    
+        self:DoShooty(true)
+    
+        if(self.Owner:IsPlayer()) then
+            self:TakePrimaryAmmo(1)
         end
     end
+
+    
+    function SWEP:Deploy()
+        self.Owner:SetMoveType(MOVETYPE_NONE)
+    end
+
+    function SWEP:Holster() 
+        self.Owner:SetMoveType(MOVETYPE_WALK)
+
+        return true 
+    end
+
+    function SWEP:OnRemove() -- When the player dies
+		self.Owner:SetMoveType(MOVETYPE_WALK)
+	end
+
+	function SWEP:OnDrop()
+		self.Owner:SetMoveType(MOVETYPE_WALK)
+	end
 end
 
-timer.Simple(0.1, function() weapons.Register(SWEP,"tf_wep_havoc_maker", true) end) --Putting this in a timer stops bugs from happening if the weapon is given while the game is paused
+timer.Simple(0.1, function() weapons.Register(SWEP,"bottle_launcher", true) end) --Putting this in a timer stops bugs from happening if the weapon is given while the game is paused

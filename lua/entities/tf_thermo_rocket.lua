@@ -40,14 +40,6 @@ if SERVER then
         return TRANSMIT_ALWAYS
     end
 
-    function ENT:PhysicsUpdate(phys)
-        local vel = phys:GetVelocity()
-
-        if(math.abs(vel.x) < 500 and math.abs(vel.y) < 500 and math.abs(vel.z) < 500) then
-            self:Destroy()
-        end
-    end
-
     function ENT:Think(ply)
         local phys = self:GetPhysicsObject()
 

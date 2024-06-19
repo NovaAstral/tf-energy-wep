@@ -19,12 +19,11 @@ SWEP.Primary.ClipSize = -1
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.Automatic = true
 SWEP.DrawAmmo = true
-SWEP.WorldModel = "models/megarexfoc/w_mafoc_ppc.mdl"
-SWEP.ViewModel = "models/megarexfoc/viewmodels/c_mafoc_ppc.mdl"
+SWEP.WorldModel = "models/megarexfoc/w_foc_riot_cannon.mdl"
+SWEP.ViewModel = "models/megarexfoc/viewmodels/c_foc_riot_cannon.mdl"
 
 SWEP.Category = "Transformers Weapons"
 
-SWEP.Base = "foc_arm_base"
 SWEP.FOCEquip = Sound("cybertronian/tffusionequip.wav")
 SWEP.FOCHolster = Sound("cybertronian/tffusionholster.wav")
 

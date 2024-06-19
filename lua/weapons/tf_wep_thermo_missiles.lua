@@ -19,12 +19,11 @@ SWEP.Primary.ClipSize = -1
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.Automatic = true
 SWEP.DrawAmmo = true
-SWEP.WorldModel = "models/megarexfoc/w_mafoc_rocket.mdl"
-SWEP.ViewModel = "models/megarexfoc/viewmodels/c_mafoc_rocket.mdl"
+SWEP.WorldModel = "models/megarexfoc/w_thermolauncher.mdl"
+SWEP.ViewModel = "models/megarexfoc/viewmodels/c_thermolauncher.mdl"
 
 SWEP.Category = "Transformers Weapons"
 
-SWEP.Base = "foc_arm_base"
 SWEP.FOCEquip = Sound("cybertronian/tflauncherequip.wav")
 SWEP.FOCHolster = Sound("cybertronian/tflauncherholster.wav")
 
